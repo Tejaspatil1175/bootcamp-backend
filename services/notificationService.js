@@ -11,13 +11,25 @@ class NotificationService {
     this.twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
     this.twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
     
+    /*
     // Initialize Twilio client if credentials are available
     if (this.twilioAccountSid && this.twilioAuthToken) {
-      this.twilioClient = twilio(this.twilioAccountSid, this.twilioAuthToken);
-      console.log('✅ Twilio SMS service initialized');
+      if (typeof this.twilioAccountSid === 'string' && this.twilioAccountSid.startsWith('AC')) {
+        try {
+          this.twilioClient = twilio(this.twilioAccountSid, this.twilioAuthToken);
+          console.log('✅ Twilio SMS service initialized');
+        } catch (error) {
+          console.error('❌ Twilio initialization failed:', error.message);
+          console.warn('⚠️ SMS service will be simulated');
+        }
+      } else {
+        console.warn('⚠️ Twilio Account SID is invalid (must start with AC) - SMS will be simulated');
+      }
     } else {
       console.warn('⚠️ Twilio credentials not configured - SMS will be simulated');
     }
+    */
+    console.log('📱 SMS service is in SIMULATION mode (Twilio disabled)');
     
     // Email Configuration (Nodemailer)
     this.emailConfig = {
@@ -47,6 +59,8 @@ class NotificationService {
         ? phoneNumber 
         : `+91${phoneNumber}`; // Default to India
 
+      // Twilio is commented out to force simulation
+      /*
       if (this.twilioClient && this.twilioPhoneNumber) {
         const result = await this.twilioClient.messages.create({
           body: message,
@@ -63,6 +77,7 @@ class NotificationService {
           provider: 'Twilio'
         };
       } else {
+      */
         // Simulate SMS for development
         console.log(`📱 [SIMULATED SMS] To: ${formattedPhone}`);
         console.log(`   Message: ${message}`);
@@ -74,7 +89,7 @@ class NotificationService {
           provider: 'Simulated',
           simulated: true
         };
-      }
+      // }
     } catch (error) {
       console.error('❌ SMS sending error:', error.message);
       return {

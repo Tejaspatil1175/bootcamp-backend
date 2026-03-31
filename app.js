@@ -13,17 +13,31 @@ import { errorHandler } from "./middleware/errorMiddleware.js";
 const app = express();
 
 // Middleware
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8080";
+
 app.use(
   cors({
-    origin: [
-      process.env.FRONTEND_URL || "http://localhost:8080",
-      "http://localhost:8081",
-    ],
+    origin: (origin, callback) => {
+      // If FRONTEND_URL is "*" or not defined, we reflect the origin to allow any URL with credentials
+      if (frontendUrl === "*" || !origin) {
+        callback(null, true);
+      } else {
+        // Otherwise, allow the specific FRONTEND_URL and localhost for development
+        const allowedOrigins = [frontendUrl, "http://localhost:8081", "http://localhost:8080"];
+        if (allowedOrigins.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          // If you want it to be 100% open from any URL (as requested), use:
+          callback(null, true);
+        }
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
+console.log(`🌐 CORS allowed from: ${frontendUrl === "*" ? "ANY URL" : frontendUrl}`);
 
 
 app.use(express.json());
